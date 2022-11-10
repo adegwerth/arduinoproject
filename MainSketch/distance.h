@@ -9,6 +9,6 @@ class Distance {
   public: 
   int currentDistance();
   bool barrier();
-  void stopIf(int maxDistance);
+  void stopIf(Driving& driving, int maxDistance);
   void init(int echoPin, int triggerPin);
 };

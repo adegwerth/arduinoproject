@@ -15,7 +15,7 @@ RH_ASK driver(2000 /*speed*/, 7 /*rxPin*/, 2 /*txPin*/);
 
 bool calibStateRem = true;  //this will be the status of the switch on the remote device TEMPORARY
 
-int speed = 200;  //this will be the speed variable, which can be controled by remote device TEMPORARY
+int speed = 200;  //this will be the speed variable, which can be controlled by remote device TEMPORARY
 
 //defining of different subclasses
 Steering steering; 

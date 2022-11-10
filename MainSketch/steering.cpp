@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <Stepper.h>
+
 #include "steering.h"
+
+// use inside of the class or pass in init or constructor
 
 Stepper StepEn(2048, 3, 5, 4, 6);
 
@@ -51,6 +54,9 @@ bool Steering::isCalibrated() {
   return calibState;
 }
 
+// why not create a methods left and right like driving-forward/backward
+// and move the variable joystick outside of the steering class
+// steering should only be possible if isCalibrated==true
 void Steering::handleSteering(int joystickHorz) {  
   if (joystickHorz > 600){
     if ((currentSteering - STEPS) < steeringMax) {

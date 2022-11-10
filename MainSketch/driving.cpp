@@ -1,8 +1,13 @@
-#include "driving.h"
-#include "distance.h"
 #include <Arduino.h>
 
-Distance distance1;
+#include "driving.h"
+#include "distance.h"
+
+//Distance distance1;
+// handle in main loop or provide as parameter
+
+// ?? create a class engine
+// use engineLeft and engineRight
 
 void Driving::forward(int speed) {
   //setting pins to drive foreward with secific speed
@@ -45,6 +50,10 @@ void Driving::init() {
   }
 }
 
+// why uses dist here?
+// can be handled in main-loop?
+// also the joystick variable should be handles outside to avoid 
+// dependencies between joy and drive
 void Driving::handleDriving(int joystickVert, int speed){
   if (joystickVert > 600 && (!distance1.barrier())) {
     forward(speed);

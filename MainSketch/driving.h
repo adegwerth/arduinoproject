@@ -1,7 +1,7 @@
 #pragma once
 
 class Driving {
-  const int ENGINE_LEFT = 41;
+  const int ENGINE_LEFT = 41; // -> set on init?
   const int ENGINE_RIGHT = 42;
   const int BACKWARD_LEFT = 33;
   const int FORWARD_LEFT = 34;
