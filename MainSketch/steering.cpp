@@ -6,7 +6,7 @@ Stepper StepEn(2048, 3, 5, 4, 6);
 
 void Steering::init() {
   pinMode(BUTTONCALIB, INPUT);
-  StepEn.setSpeed(1);
+  StepEn.setSpeed(10);
 }
 
 int Steering::calibrationSingle(int steps, int readPin) {
@@ -23,11 +23,13 @@ int Steering::calibrationSingle(int steps, int readPin) {
 }
 
 void Steering::startCalibration() {
+  int stepCountRight = calibrationSingle(-STEPS, BUTTONCALIB);
+  Serial.println("StepCountRight: " + String(stepCountRight));
+  
   int stepCountLeft = calibrationSingle(STEPS, BUTTONCALIB);
   Serial.println("StepCountLeft: " + String(stepCountLeft));
 
-  int stepCountRight = calibrationSingle(-STEPS, BUTTONCALIB);
-  Serial.println("StepCountRight: " + String(stepCountRight));
+  
 
   int stepsAll = abs(stepCountLeft) + abs(stepCountRight);
   Serial.println("StepsAll: " + String(stepsAll));

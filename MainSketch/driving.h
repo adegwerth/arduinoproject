@@ -15,5 +15,6 @@ class Driving {
     void forward(int speed);
     void backward(int speed);
     void stop();
+    void stopForward();
     void handleDriving(int joystickVert, int speed);
 };

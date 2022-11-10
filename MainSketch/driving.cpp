@@ -1,8 +1,11 @@
 #include "driving.h"
+#include "distance.h"
 #include <Arduino.h>
 
+Distance distance1;
 
 void Driving::forward(int speed) {
+  //setting pins to drive foreward with secific speed
   analogWrite(ENGINE_LEFT, speed);
   digitalWrite(BACKWARD_LEFT, LOW);
   digitalWrite(FORWARD_LEFT, HIGH);
@@ -13,6 +16,7 @@ void Driving::forward(int speed) {
 }
 
 void Driving::backward(int speed) {
+  //driving backward with specific speed
   analogWrite(ENGINE_LEFT, speed);
   digitalWrite(BACKWARD_LEFT, HIGH);
   digitalWrite(FORWARD_LEFT, LOW);
@@ -23,30 +27,28 @@ void Driving::backward(int speed) {
 }
 
 void Driving::stop(){
+  //stops driving 
   digitalWrite(BACKWARD_LEFT, LOW);
   digitalWrite(FORWARD_LEFT, LOW);
   digitalWrite(BACKWARD_RIGHT, LOW);
   digitalWrite(FORWARD_RIGHT, LOW);  
 }
 
+void Driving::stopForward() {
+  digitalWrite(FORWARD_LEFT, LOW);
+  digitalWrite(FORWARD_RIGHT, LOW);
+}
+
 void Driving::init() {
   for (int i = 0; i <= 5; i++) {
     pinMode(enginePins[i], OUTPUT);
   }
-    /*    
-    pinMode(BACKWARD_LEFT, OUTPUT);
-    pinMode(FORWARD_LEFT, OUTPUT);
-    pinMode(BACKWARD_RIGHT, OUTPUT);
-    pinMode(FORWARD_RIGHT, OUTPUT);
-    pinMode(ENGINE_LEFT, OUTPUT);
-    pinMode(ENGINE_RIGHT, OUTPUT);
-    */
 }
 
 void Driving::handleDriving(int joystickVert, int speed){
-  if (joystickVert > 550) {
+  if (joystickVert > 600 && (!distance1.barrier())) {
     forward(speed);
-  } else if (joystickVert < 450) {
+  } else if (joystickVert < 400) {
     backward(speed);
   } else {
     stop();    
