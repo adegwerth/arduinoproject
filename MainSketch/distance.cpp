@@ -24,7 +24,7 @@ bool Distance::barrier() {
   return barrierState;  //returns if barrier is present or not
 }
 
-void Distance::stopIf(Drivin& driving, int maxDistance){ 
+void Distance::stopIf(Driving& driving, int maxDistance){ 
   if (currentDistance() <= maxDistance){  //stops car if distance of detector smaller ore equal to maxDistance
     driving.stopForward(); //stops driving process of car if it's driving foreward
     barrierState = true; //barrier is present

@@ -55,7 +55,7 @@ void loop() {
   //  }
 
   //egine will be stopped if distance detector has got an distance smaler ore equal to 5cm
-  distance.stopIf(5);
+  distance.stopIf(driving, 5);
   
   //steering process of car; with current position of joystick
   steering.handleSteering(joyPos.y);
