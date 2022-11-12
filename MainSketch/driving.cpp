@@ -35,11 +35,13 @@ void Driving::stop(){
 }
 
 void Driving::stopForward() {
+  //stops to drive foreward
   digitalWrite(FORWARD_LEFT, LOW);
   digitalWrite(FORWARD_RIGHT, LOW);
 }
 
 void Driving::init() {
+  //setting pinModes of engine pins, with for loop so make code smaller
   for (int i = 0; i <= 5; i++) {
     pinMode(enginePins[i], OUTPUT);
   }
