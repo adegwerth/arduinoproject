@@ -11,7 +11,6 @@ void Steering::init() {
 
 int Steering::calibrationSingle(int steps, int readPin) {
   int stepCount = 0;
-  Serial.println("cal");
   while (digitalRead(readPin) == 0) {  //as long as the button from the max ountput is not pressed the stepper will step to the given side
     StepEn.step(steps);
     stepCount += steps;

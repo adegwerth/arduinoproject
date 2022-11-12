@@ -1,21 +1,19 @@
-#include <RH_ASK.h>
+
 #include <SPI.h>  // Not actualy used but needed to compile
 
 //uncluding needed subfiles
 #include "steering.h" 
 #include "driving.h"
 #include "distance.h"
+#include "MessageHeader.h"
 
-struct JOY_POS {
-  int x;
-  int y;
-};
-
-RH_ASK driver(2000 /*speed*/, 7 /*rxPin*/, 2 /*txPin*/);
+MessageHandler messageHandler;
 
 bool calibStateRem = true;  //this will be the status of the switch on the remote device TEMPORARY
 
 int speed = 200;  //this will be the speed variable, which can be controled by remote device TEMPORARY
+
+int temp = 0;
 
 //defining of different subclasses
 Steering steering; 
@@ -23,11 +21,9 @@ Driving driving;
 Distance distance;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600 *2);
+  Serial2.begin(9600 *4);
   
-  if (!driver.init())
-    Serial.println("driver init failed");
-    
   //initalizing subclasses, to set pinModes or Pins
   steering.init();  
   driving.init();
@@ -35,18 +31,33 @@ void setup() {
 }
 
 void loop() {
-  JOY_POS joyPos;
 
-  uint8_t buflen = sizeof(joyPos);
-  if (driver.recv((uint8_t*)&joyPos, &buflen)) {
-    Serial.println("Position: " + String(joyPos.x) + " " + String(joyPos.y));
-  }
+    messageHandler.pollMessage(Serial2);
+    if (messageHandler.isMessageAvailable()) {
+
+      Serial.println("Message available");
+      int id;
+      int data;
+      messageHandler.getMessage(id, data);
+
+      // handle message
+      switch (id) {
+        case 1: {
+        Serial.print(temp++);
+        break;}
+      }
+    }
+
+    messageHandler.sendMessage(Serial2, 1, 100);
+    Serial.println("data send");
+
+  
 
   //calibrates the steering of remote button pressed and wasn't calibrated as far
-  if ((calibStateRem == true) && (!steering.isCalibrated())) {
-    Serial.println("Calibration Starting");
-    steering.startCalibration(); //starting calibration
-  }
+  //if ((calibStateRem == true) && (!steering.isCalibrated())) {
+  //  Serial.println("Calibration Starting");
+  //  steering.startCalibration(); //starting calibration
+  //}
 
   //x = up/down; y = left/right
   //ggf. while Schleife
@@ -55,11 +66,11 @@ void loop() {
   //  }
 
   //egine will be stopped if distance detector has got an distance smaler ore equal to 5cm
-  distance.stopIf(5);
+  //distance.stopIf(5);
   
   //steering process of car; with current position of joystick
-  steering.handleSteering(joyPos.y);
+  //steering.handleSteering(joyPos.y);
   
   //driving process of car; with current position of joystick and speed of engines
-  driving.handleDriving(joyPos.x, speed);
+  //driving.handleDriving(joyPos.x, speed);
 }
