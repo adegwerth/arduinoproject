@@ -1,14 +1,7 @@
-struct Message 
-{
-  int id;
-  int data;
-};
-
-class MessageHandler
-{
+class MessageHandler {
 public:
 	// max message size
-	static const int MESSAGE_BUFF_SIZE = 50;
+	static const int MESSAGE_BUFF_SIZE = 100;
 
 protected:
 	// buffer for the message
@@ -19,8 +12,6 @@ protected:
 	bool inMessage;
 	// indocates if a message was read
 	bool messageAvaliable;
-	// place-holder fo a read message
-	Message message;
 
 public:
 	// initialzes a the messagehandler object
@@ -39,7 +30,7 @@ public:
 			// read a byte from the serial interface
 			char b = serial.read();
 			Serial.print(b);
-			switch (b) {        
+			switch (b) {
 			case '<': { // start marker
 				inMessage = true;
 
@@ -56,9 +47,6 @@ public:
           messageBuf[currentMessageBuf] = '\0';
 
 					inMessage = false;
-
-					// "id;data"
-					sscanf(messageBuf, "%d;%d", &(message.id), &(message.data));
 
 					messageAvaliable = true;
 				}
@@ -80,29 +68,29 @@ public:
 	}
 
 	// Gets the current available message.
-	bool getMessage(int& id, int& data)
+	const char* getMessage(byte* id)
 	{
     if (messageAvaliable == false)
     {
       // no message available
-      return false;
+      return NULL;
     }
 
-    id = message.id;
-    data = message.data;
+    *id = messageBuf[0];
   
     // mark that the message is no longer available
     messageAvaliable = false;
 
-		return true;
+		return &(messageBuf[1]);
 	}
 	
 	// Sends a message to the serial interface.
-	void sendMessage(Stream &serial, int id, int data) 
+	void sendMessage(Stream &serial, byte id, const char* data) 
 	{	  
 	  // send it
 	  serial.write('<'); // send start-marker
-    serial.print(String(id) + ";" + String(data));
+    serial.write(id);
+    serial.print(data);
 	  serial.write('>'); // send end-marker
 	}
 };

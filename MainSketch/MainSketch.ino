@@ -8,12 +8,17 @@
 #include "MessageHeader.h"
 
 MessageHandler messageHandler;
+MessageHandler messageHandler3; //serial 3
 
-bool calibStateRem = true;  //this will be the status of the switch on the remote device TEMPORARY
 
-int speed = 200;  //this will be the speed variable, which can be controled by remote device TEMPORARY
+int speedVal = 200;  //this will be the speed variable, which can be controled by remote device TEMPORARY
 
 int temp = 0;
+
+int joyVert;
+int joyHorz;
+
+
 
 //defining of different subclasses
 Steering steering; 
@@ -21,8 +26,11 @@ Driving driving;
 Distance distance;
 
 void setup() {
-  Serial.begin(9600 *2);
-  Serial2.begin(9600 *4);
+  Serial.begin(9600);
+  Serial1.begin(9600);
+  Serial3.begin(9600);
+
+  
   
   //initalizing subclasses, to set pinModes or Pins
   steering.init();  
@@ -31,34 +39,50 @@ void setup() {
 }
 
 void loop() {
-
-    messageHandler.pollMessage(Serial2);
+    
+    messageHandler.pollMessage(Serial1);
     if (messageHandler.isMessageAvailable()) {
 
       Serial.println("Message available");
-      int id;
-      int data;
-      messageHandler.getMessage(id, data);
+      byte id;
+      const char* data = messageHandler.getMessage(&id);
 
       // handle message
       switch (id) {
         case 1: {
-        Serial.print(temp++);
-        break;}
-      }
+          messageHandler3.sendMessage(Serial3, id, data);
+          sscanf(data, "%d;%d;%d", &joyHorz, &joyVert, &speedVal);
+          Serial.println("data got");  
+          Serial.println(data);
+          //driving process of car; with current position of joystick and speed of engines
+          driving.handleDriving(joyVert, 140);               
+          break;}
+        case 3: {
+          speedVal = data;
+        break;}       
+        case 4: {
+          Serial1.end();
+          Serial.println("Calibration Starting");
+          steering.startCalibration(); //starting calibration
+          Serial.println("Cal done");
+          Serial1.begin(9600);             
+        break;} 
+        case 5: {
+          tone(24, 200, 1000);
+        break;}                 
+       }
+      Serial.println("Horz: " + String(joyHorz) + " Vert: " + String(joyVert) + " Speed: " + String(speedVal/4) + " Cal: " + String(0) + " Horn: " + String(0));
     }
 
-    messageHandler.sendMessage(Serial2, 1, 100);
-    Serial.println("data send");
 
+    
+    //messageHandler.sendMessage(Serial1, 1, 100);
+    //Serial.println("data send");
+    //delay(500);
   
 
   //calibrates the steering of remote button pressed and wasn't calibrated as far
-  //if ((calibStateRem == true) && (!steering.isCalibrated())) {
-  //  Serial.println("Calibration Starting");
-  //  steering.startCalibration(); //starting calibration
-  //}
-
+  
   //x = up/down; y = left/right
   //ggf. while Schleife
   //  if (calibStateRem == true && steering.isCalibrated()) {
@@ -71,6 +95,4 @@ void loop() {
   //steering process of car; with current position of joystick
   //steering.handleSteering(joyPos.y);
   
-  //driving process of car; with current position of joystick and speed of engines
-  //driving.handleDriving(joyPos.x, speed);
 }

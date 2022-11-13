@@ -22,6 +22,7 @@ int Steering::calibrationSingle(int steps, int readPin) {
 }
 
 void Steering::startCalibration() {
+  StepEn.setSpeed(5);
   int stepCountRight = calibrationSingle(-STEPS, BUTTONCALIB);
   Serial.println("StepCountRight: " + String(stepCountRight));
   
@@ -44,6 +45,7 @@ void Steering::startCalibration() {
 
 
   calibState = true;  //calibration process is done
+  StepEn.setSpeed(10);    
 }
 
 bool Steering::isCalibrated() {

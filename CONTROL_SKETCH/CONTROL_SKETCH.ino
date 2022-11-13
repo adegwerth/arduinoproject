@@ -33,13 +33,18 @@ bool lockButton = false;
 bool hornButton = false;
 bool freeButton = false;
 
+bool unlocked = true; //CHANGE!! AFTER DEBUGGING
+
 int speedState = 0;
 
 
 
 void setup() {
+  lcd.init();
+  lcd.backlight();
+
   Serial.begin(9600);
-  Serial2.begin(9600 * 4);
+  Serial1.begin(9600);
 
   pinMode(CALBUT, INPUT);
   pinMode(FREBUT, INPUT);
@@ -48,63 +53,88 @@ void setup() {
 
   SPI.begin();
   mfrc522.PCD_Init();
-
-  lcd.init();
-  lcd.backlight();
 }
 
 void loop() {
-  joyRead();
-  buttonRead();
-  potiRead();
-  readRFID();
+  if (unlocked == true) {
+    joyRead();
+    buttonRead();
+    potiRead();
 
-  if (correctKey == true) {
-    lcd.setCursor(0, 0);
-    lcd.print("Entsperrt");
-  }
+    if (lockButton == true) {
+      unlocked = false;
+      correctKey = false;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Gesperrt");
+    }
 
+    Serial.println(lockButton);
 
-  messageHandler.sendMessage(Serial2, 1, 100);
-  Serial.println("data send");
+    //messageHandler.sendMessage(Serial1, 1, 100);
+    //Serial.println("data send");
+    delay(500);
 
-  messageHandler.pollMessage(Serial2);
+    
+  messageHandler.pollMessage(Serial1);
     if (messageHandler.isMessageAvailable()) {
 
       Serial.println("Message available");
-      int id;
-      int data;
-      messageHandler.getMessage(id, data);
+      byte id;
+      const char* data = messageHandler.getMessage(id);
 
       // handle message
       switch (id) {
         case 1: {
-        Serial.print(temp++);
+          Serial.println("data got");
         break;}
       }
     }
+    
 
+    calibMode();
 
-  calibMode();
+    if (freeButton == true) {
+      barrierDetected();
+    }
 
-
-  Serial.println("Horz: " + String(joyHorz) + " Vert: " + String(joyVert) + " Cal: " + String(calibButton) + " Hor: " + String(hornButton) + " Loc: " + String(lockButton) + " Free: " + String(freeButton) + " Spe: " + String(speedState));
+    //Serial.println("Horz: " + String(joyHorz) + " Vert: " + String(joyVert) + " Cal: " + String(calibButton) + " Hor: " + String(hornButton) + " Loc: " + String(lockButton) + " Free: " + String(freeButton) + " Spe: " + String(speedState));
+  } else {
+    readRFID();
+    unlocked = correctKey;
+  }
 }
 
 void buttonRead() {
   calibButton = digitalRead(CALBUT);
+  
+  if (calibButton == true) {
+    messageHandler.sendMessage(Serial1, 4, "");    
+  }
+  
+
   lockButton = digitalRead(LOCBUT);
+
   hornButton = digitalRead(HORBUT);
+  //messageHandler.sendMessage(Serial1, 5, hornButton);
+
   freeButton = digitalRead(FREBUT);
 }
 
 void joyRead() {
   joyHorz = 1023 - analogRead(A0);
   joyVert = 1023 - analogRead(A1);
+  speedState = analogRead(POTI);
+
+
+  char msg[MessageHandler::MESSAGE_BUFF_SIZE];
+  sprintf(&(msg[0]),"%d;%d;%d", joyHorz, joyVert, speedState);
+
+  messageHandler.sendMessage(Serial1, 1, msg);
+//  messageHandler.sendMessage(Serial1, 2, joyVert);
 }
 
 void potiRead() {
-  speedState = analogRead(POTI);
 }
 
 void readRFID() {
@@ -115,7 +145,9 @@ void readRFID() {
     return;
   }
   if (mfrc522.uid.uidByte[0] == 108 && mfrc522.uid.uidByte[1] == 53 && mfrc522.uid.uidByte[2] == 208 && mfrc522.uid.uidByte[3] == 110) {
-    correctKey = true;
+    correctKey = true;    
+    lcd.setCursor(0, 0);
+    lcd.print("Entsperrt");
   } else {
     correctKey = false;
   }
@@ -153,6 +185,7 @@ void progressIndicator() {
 
 void calibMode() {
   if (calibButton == true) {
+    messageHandler.sendMessage(Serial1, 4, 1);
     delay(5);
     calibrationMode = !calibrationMode;
 
@@ -162,8 +195,9 @@ void calibMode() {
       lcd.print("Kalibrierungs");
       lcd.setCursor(0, 1);
       lcd.print("Modus");
-    };    
+    };
     if (calibrationMode == false) {
+      messageHandler.sendMessage(Serial1, 4, 0);
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Kalibrierung");
@@ -171,4 +205,12 @@ void calibMode() {
       lcd.print("beendet");
     }
   };
+}
+
+void barrierDetected() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Hindernis");
+  lcd.setCursor(0, 1);  
+  lcd.print("erkannt");  
 }
