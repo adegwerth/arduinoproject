@@ -11,7 +11,7 @@ class Steering {
   int steeringMin = 0;        // the minimal steering position
   int steeringMax = 0;        // the maximal steering position
   int currentSteering = 0;    // the current steering position
-  const int STEPS = 10;       //amount of stepps, with which the motor will go on
+  const int STEPS = 50;       //amount of stepps, with which the motor will go on
   
   public:
     void init();

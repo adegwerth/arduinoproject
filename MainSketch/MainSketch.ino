@@ -28,6 +28,7 @@ Distance distance;
 void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
+  Serial2.begin(9600);
   Serial3.begin(9600);
 
   
@@ -39,7 +40,7 @@ void setup() {
 }
 
 void loop() {
-    
+    //Serial.println("loop starting");
     messageHandler.pollMessage(Serial1);
     if (messageHandler.isMessageAvailable()) {
 
@@ -55,7 +56,10 @@ void loop() {
           Serial.println("data got");  
           Serial.println(data);
           //driving process of car; with current position of joystick and speed of engines
-          driving.handleDriving(joyVert, 140);               
+          Serial1.end();
+          driving.handleDriving(joyVert, 200); 
+          steering.handleSteering(joyHorz);
+          Serial1.begin(9600);                        
           break;}
         case 3: {
           speedVal = data;
@@ -64,8 +68,12 @@ void loop() {
           Serial1.end();
           Serial.println("Calibration Starting");
           steering.startCalibration(); //starting calibration
-          Serial.println("Cal done");
-          Serial1.begin(9600);             
+          Serial1.begin(9600);   
+          //for(int i = 0; i = 5; i++) {
+          //messageHandler.sendMessage(Serial1, 1, "");
+          //Serial.println("data send"); 
+          //delay(500);
+          //};                    
         break;} 
         case 5: {
           tone(24, 200, 1000);
@@ -73,10 +81,12 @@ void loop() {
        }
       Serial.println("Horz: " + String(joyHorz) + " Vert: " + String(joyVert) + " Speed: " + String(speedVal/4) + " Cal: " + String(0) + " Horn: " + String(0));
     }
+  
 
-
-    
-    //messageHandler.sendMessage(Serial1, 1, 100);
+     // messageHandler.sendMessage(Serial1, 1, "");
+      //Serial.println("data send"); 
+      //delay(500);                 
+    //messageHandler.sendMessage(Serial1, 1, "");
     //Serial.println("data send");
     //delay(500);
   

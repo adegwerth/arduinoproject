@@ -12,7 +12,6 @@ MessageHandler messageHandler;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 MFRC522 mfrc522(SS_PIN, RST_PIN);
-bool correctKey = false;
 
 const int JOYHORZ = A0;
 const int JOYVERT = A1;
@@ -33,10 +32,11 @@ bool lockButton = false;
 bool hornButton = false;
 bool freeButton = false;
 
-bool unlocked = true; //CHANGE!! AFTER DEBUGGING
+bool unlocked = false; //CHANGE!! AFTER DEBUGGING
 
 int speedState = 0;
 
+int keyId[] {108, 53, 208, 110};
 
 
 void setup() {
@@ -45,6 +45,7 @@ void setup() {
 
   Serial.begin(9600);
   Serial1.begin(9600);
+  Serial3.begin(9600);
 
   pinMode(CALBUT, INPUT);
   pinMode(FREBUT, INPUT);
@@ -56,39 +57,40 @@ void setup() {
 }
 
 void loop() {
-  if (unlocked == true) {
-    joyRead();
-    buttonRead();
-    potiRead();
+ if (unlocked == true) {    
+      
+      joyRead();     
+      buttonRead();
 
     if (lockButton == true) {
       unlocked = false;
-      correctKey = false;
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Gesperrt");
     }
 
-    Serial.println(lockButton);
-
-    //messageHandler.sendMessage(Serial1, 1, 100);
-    //Serial.println("data send");
-    delay(500);
+    
 
     
-  messageHandler.pollMessage(Serial1);
+    
+
+    messageHandler.pollMessage(Serial1);
     if (messageHandler.isMessageAvailable()) {
 
       Serial.println("Message available");
       byte id;
-      const char* data = messageHandler.getMessage(id);
+      const char* data = messageHandler.getMessage(&id);
 
       // handle message
       switch (id) {
         case 1: {
           Serial.println("data got");
+          calibrationMode = false;
+          calibMode();
         break;}
       }
+    } else {
+      delay(500);
     }
     
 
@@ -99,10 +101,10 @@ void loop() {
     }
 
     //Serial.println("Horz: " + String(joyHorz) + " Vert: " + String(joyVert) + " Cal: " + String(calibButton) + " Hor: " + String(hornButton) + " Loc: " + String(lockButton) + " Free: " + String(freeButton) + " Spe: " + String(speedState));
-  } else {
+  } else if (unlocked == false) {
     readRFID();
-    unlocked = correctKey;
   }
+  
 }
 
 void buttonRead() {
@@ -131,27 +133,34 @@ void joyRead() {
   sprintf(&(msg[0]),"%d;%d;%d", joyHorz, joyVert, speedState);
 
   messageHandler.sendMessage(Serial1, 1, msg);
-//  messageHandler.sendMessage(Serial1, 2, joyVert);
-}
-
-void potiRead() {
+  
 }
 
 void readRFID() {
   if (!mfrc522.PICC_IsNewCardPresent()) {
+    unlocked = false;  
+    lcd.setCursor(0, 0);
+    lcd.print("Bitte entsperren"); 
     return;
   }
   if (!mfrc522.PICC_ReadCardSerial()) {
     return;
   }
-  if (mfrc522.uid.uidByte[0] == 108 && mfrc522.uid.uidByte[1] == 53 && mfrc522.uid.uidByte[2] == 208 && mfrc522.uid.uidByte[3] == 110) {
-    correctKey = true;    
+  if (mfrc522.uid.uidByte[0] == keyId[0] && mfrc522.uid.uidByte[1] == keyId[1] && mfrc522.uid.uidByte[2] == keyId[2] && mfrc522.uid.uidByte[3] == keyId[3]) {
+    unlocked = true;
+    lcd.clear();    
     lcd.setCursor(0, 0);
     lcd.print("Entsperrt");
-  } else {
-    correctKey = false;
-  }
+    delay(2000);
+    lcd.clear();
+    return;
+  } 
+  unlocked = false;   
+  lcd.setCursor(0, 0);
+  lcd.print("Bitte entsperren");   
+  
 }
+
 
 void progressIndicator() {
   int progressPos = 3;
@@ -195,6 +204,7 @@ void calibMode() {
       lcd.print("Kalibrierungs");
       lcd.setCursor(0, 1);
       lcd.print("Modus");
+
     };
     if (calibrationMode == false) {
       messageHandler.sendMessage(Serial1, 4, 0);
@@ -203,6 +213,7 @@ void calibMode() {
       lcd.print("Kalibrierung");
       lcd.setCursor(0, 1);
       lcd.print("beendet");
+
     }
   };
 }
