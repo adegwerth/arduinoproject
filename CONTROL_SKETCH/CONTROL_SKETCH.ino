@@ -28,6 +28,7 @@ int joyVert = 0;
 
 bool calibButton = false;
 bool calibrationMode = false;
+bool calibState = false;
 bool lockButton = false;
 bool hornButton = false;
 bool freeButton = false;
@@ -45,6 +46,7 @@ void setup() {
 
   Serial.begin(9600);
   Serial1.begin(9600);
+  Serial2.begin(9600);
   Serial3.begin(9600);
 
   pinMode(CALBUT, INPUT);
@@ -58,10 +60,10 @@ void setup() {
 
 void loop() {
  if (unlocked == true) {    
-      
-      joyRead();     
-      buttonRead();
 
+      buttonRead();
+      joyRead();   
+      
     if (lockButton == true) {
       unlocked = false;
       lcd.clear();
@@ -69,12 +71,19 @@ void loop() {
       lcd.print("Gesperrt");
     }
 
+    /*
+    if (calibState == false) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Bitte");
+      lcd.setCursor(0, 1);
+      lcd.print("Kalibrieren!");
+    }
+    */
     
-
     
-    
-
-    messageHandler.pollMessage(Serial1);
+    Serial.println(Serial2.read());
+    messageHandler.pollMessage(Serial2);
     if (messageHandler.isMessageAvailable()) {
 
       Serial.println("Message available");
@@ -90,10 +99,11 @@ void loop() {
         break;}
       }
     } else {
-      delay(500);
-    }
+      //delay(500); 
+   
+      }
     
-
+    
     calibMode();
 
     if (freeButton == true) {
@@ -104,7 +114,7 @@ void loop() {
   } else if (unlocked == false) {
     readRFID();
   }
-  
+
 }
 
 void buttonRead() {
@@ -118,7 +128,10 @@ void buttonRead() {
   lockButton = digitalRead(LOCBUT);
 
   hornButton = digitalRead(HORBUT);
-  //messageHandler.sendMessage(Serial1, 5, hornButton);
+  if (hornButton == true) {
+    messageHandler.sendMessage(Serial1, 5, "");    
+  }
+  
 
   freeButton = digitalRead(FREBUT);
 }
@@ -133,7 +146,6 @@ void joyRead() {
   sprintf(&(msg[0]),"%d;%d;%d", joyHorz, joyVert, speedState);
 
   messageHandler.sendMessage(Serial1, 1, msg);
-  
 }
 
 void readRFID() {

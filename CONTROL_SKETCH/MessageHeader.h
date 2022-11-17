@@ -92,5 +92,6 @@ public:
     serial.write(id);
     serial.print(data);
 	  serial.write('>'); // send end-marker
+    Serial1.flush();
 	}
 };

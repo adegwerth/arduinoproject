@@ -29,7 +29,7 @@ public:
 		{
 			// read a byte from the serial interface
 			char b = serial.read();
-			Serial.print(b);
+			Serial.print(b);      
 			switch (b) {
 			case '<': { // start marker
 				inMessage = true;

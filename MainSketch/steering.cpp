@@ -28,16 +28,12 @@ void Steering::startCalibration() {
   int stepCountLeft = calibrationSingle(STEPS, BUTTONCALIB);
   Serial.println("StepCountLeft: " + String(stepCountLeft));
 
-  
-
   int stepsAll = abs(stepCountLeft) + abs(stepCountRight);
   Serial.println("StepsAll: " + String(stepsAll));
 
-  //if (abs(stepCountLeft) >= abs(stepCountRight)) {
     int centre = (stepCountLeft + stepCountRight) / 2;  //subtracting the number to get the amount of stepps
     Serial.println("Mitte: " + String(centre));
     StepEn.step(centre);  //turn stepper the amount of steps to the right side
-  //}
 
   steeringMax = stepsAll / 2;
   steeringMin = -(stepsAll / 2);
@@ -52,24 +48,19 @@ bool Steering::isCalibrated() {
 }
 
 void Steering::handleSteering(int joystickHorz) {  
-  if (joystickHorz > 600 && currentSteering == 0){
-    //if ((currentSteering - STEPS) < steeringMax) {  
+  if (joystickHorz > 600 && currentSteering == 0){  
       StepEn.step(-(steeringMax - 50) );
       currentSteering += (steeringMax -50);
-      
-    //}
   } else if (joystickHorz < 400 && currentSteering == 0) {
-    //if ((currentSteering + STEPS) > steeringMin) {
       StepEn.step(- (steeringMin + 50));
       currentSteering += steeringMin + 50;
-    //}
   } else if (currentSteering != 0 && !(joystickHorz > 600) && !(joystickHorz < 400)) {
       StepEn.step(currentSteering);
       Serial.println("mitte");
       currentSteering = 0;
   }; 
   
-  Serial.println("joy: " + String(joystickHorz) + " min: " + String(steeringMin)  + " max: " + String(steeringMax) + " cur: " + String(currentSteering));  
+  //Serial.println("joy: " + String(joystickHorz) + " min: " + String(steeringMin)  + " max: " + String(steeringMax) + " cur: " + String(currentSteering));  
 }
 
 void Steering::detailCalib(int joystickHorz) {

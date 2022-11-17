@@ -1,8 +1,7 @@
+#include <Arduino.h>
 #include "driving.h"
 #include "distance.h"
-#include <Arduino.h>
 
-Distance distance1;
 
 void Driving::forward(int speed) {
   //setting pins to drive foreward with secific speed
@@ -34,11 +33,6 @@ void Driving::stop(){
   digitalWrite(FORWARD_RIGHT, LOW);  
 }
 
-void Driving::stopForward() {
-  //stops to drive foreward
-  digitalWrite(FORWARD_LEFT, LOW);
-  digitalWrite(FORWARD_RIGHT, LOW);
-}
 
 void Driving::init() {
   //setting pinModes of engine pins, with for loop so make code smaller
@@ -47,8 +41,9 @@ void Driving::init() {
   }
 }
 
-void Driving::handleDriving(int joystickVert, int speed){
-  if (joystickVert > 600 && (!distance1.barrier())) {
+void Driving::handleDriving(int joystickVert, int speed, Distance distance){
+  Serial.println(distance.barrier());
+  if (joystickVert > 600 && (distance.barrier() == false)) {
     forward(speed);
   } else if (joystickVert < 400) {
     backward(speed);

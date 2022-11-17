@@ -1,4 +1,5 @@
 #pragma once
+#include "distance.h"
 
 class Driving {
   const int ENGINE_LEFT = 41;
@@ -15,6 +16,5 @@ class Driving {
     void forward(int speed);
     void backward(int speed);
     void stop();
-    void stopForward();
-    void handleDriving(int joystickVert, int speed);
+    void handleDriving(int joystickVert, int speed, Distance distance);
 };
