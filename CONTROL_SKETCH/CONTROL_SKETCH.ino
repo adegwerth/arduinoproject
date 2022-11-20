@@ -4,9 +4,9 @@
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
-#include "MessageHeader.h"
+#include "MessageHandler.h"
 MessageHandler messageHandler;
-
+HardwareSerial& serialCom = Serial3;
 #define SS_PIN 53
 #define RST_PIN 6
 
@@ -39,15 +39,20 @@ int speedState = 0;
 
 int keyId[] {108, 53, 208, 110};
 
+long msgCount = 0;
+
+unsigned long MESSAGE_SEND_INTERVALL = 100;
+unsigned long timeSendMessage = 0;
+unsigned long time = 0;
 
 void setup() {
   lcd.init();
   lcd.backlight();
 
   Serial.begin(9600);
-  Serial1.begin(9600);
+  serialCom.begin(9600);
   Serial2.begin(9600);
-  Serial3.begin(9600);
+
 
   pinMode(CALBUT, INPUT);
   pinMode(FREBUT, INPUT);
@@ -59,6 +64,7 @@ void setup() {
 }
 
 void loop() {
+  time = millis();
  if (unlocked == true) {    
 
       buttonRead();
@@ -82,26 +88,21 @@ void loop() {
     */
     
     
-    Serial.println(Serial2.read());
+    
     messageHandler.pollMessage(Serial2);
     if (messageHandler.isMessageAvailable()) {
 
       Serial.println("Message available");
-      byte id;
+      char id;
       const char* data = messageHandler.getMessage(&id);
 
       // handle message
       switch (id) {
-        case 1: {
+        case 'a': {
           Serial.println("data got");
-          calibrationMode = false;
-          calibMode();
         break;}
       }
-    } else {
-      //delay(500); 
-   
-      }
+    } 
     
     
     calibMode();
@@ -110,18 +111,21 @@ void loop() {
       barrierDetected();
     }
 
+
+    //messageHandler.sendMessage(serialCom, '9', String(msgCount++).c_str());
+
     //Serial.println("Horz: " + String(joyHorz) + " Vert: " + String(joyVert) + " Cal: " + String(calibButton) + " Hor: " + String(hornButton) + " Loc: " + String(lockButton) + " Free: " + String(freeButton) + " Spe: " + String(speedState));
   } else if (unlocked == false) {
     readRFID();
   }
-
+  //delay(500);
 }
 
 void buttonRead() {
   calibButton = digitalRead(CALBUT);
   
   if (calibButton == true) {
-    messageHandler.sendMessage(Serial1, 4, "");    
+    messageHandler.sendMessage(serialCom, '2', " ");    
   }
   
 
@@ -129,7 +133,7 @@ void buttonRead() {
 
   hornButton = digitalRead(HORBUT);
   if (hornButton == true) {
-    messageHandler.sendMessage(Serial1, 5, "");    
+    messageHandler.sendMessage(serialCom, '4', " ");    
   }
   
 
@@ -137,15 +141,17 @@ void buttonRead() {
 }
 
 void joyRead() {
+  if((time - timeSendMessage) >= MESSAGE_SEND_INTERVALL) {
   joyHorz = 1023 - analogRead(A0);
   joyVert = 1023 - analogRead(A1);
   speedState = analogRead(POTI);
-
-
+  
   char msg[MessageHandler::MESSAGE_BUFF_SIZE];
   sprintf(&(msg[0]),"%d;%d;%d", joyHorz, joyVert, speedState);
-
-  messageHandler.sendMessage(Serial1, 1, msg);
+  Serial.println("Message send");
+  messageHandler.sendMessage(serialCom, '1', msg);
+  timeSendMessage = time;
+  }
 }
 
 void readRFID() {
@@ -206,7 +212,7 @@ void progressIndicator() {
 
 void calibMode() {
   if (calibButton == true) {
-    messageHandler.sendMessage(Serial1, 4, 1);
+    //messageHandler.sendMessage(Serial1, 4, 1);
     delay(5);
     calibrationMode = !calibrationMode;
 
@@ -219,13 +225,12 @@ void calibMode() {
 
     };
     if (calibrationMode == false) {
-      messageHandler.sendMessage(Serial1, 4, 0);
+      //messageHandler.sendMessage(Serial1, '4', "0");
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Kalibrierung");
       lcd.setCursor(0, 1);
       lcd.print("beendet");
-
     }
   };
 }

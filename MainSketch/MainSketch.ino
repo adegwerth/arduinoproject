@@ -4,9 +4,10 @@
 #include "steering.h"
 #include "driving.h"
 #include "distance.h"
-#include "MessageHeader.h"
+#include "MessageHandler.h"
 
 MessageHandler messageHandler;
+HardwareSerial& serialCom = Serial3;
 
 int speedVal = 200;  //this will be the speed variable, which can be controled by remote device TEMPORARY
 
@@ -27,54 +28,58 @@ void setup() {
   distance.init(50, 51);
 
   Serial.begin(115200);
-  Serial3.begin(9600);
+  serialCom.begin(9600);
+  Serial2.begin(9600);
 }
 
 void loop() {
-  messageHandler.pollMessage(Serial1);
+  messageHandler.pollMessage(serialCom);
   if (messageHandler.isMessageAvailable()) {
+  
+    
+    Serial.print("Message available");
 
-    //Serial.println("Message available");
-    byte id;
+    char id;
     const char* data = messageHandler.getMessage(&id);
-
+    Serial.println(id);
     // handle message
     switch (id) {
-      case 1: {
-          Serial.println();
-          messageHandler.sendMessage(Serial3, id, data);
+      case '1': {
+          Serial.println(data);
+          //messageHandler.sendMessage(Serial3, id, data);
           sscanf(data, "%d;%d;%d", &joyHorz, &joyVert, &speedVal);
+          Serial.println(joyHorz);
           //driving process of car; with current position of joystick and speed of engines
-          Serial1.end();
+          serialCom.end();
           distance.stopIf(5);
           driving.handleDriving(joyVert, speedVal / 4, distance);
           if (steering.isCalibrated() == true) {
             steering.handleSteering(joyHorz);
           }
-          Serial1.begin(9600);
+          serialCom.begin(9600);
+       
           break;
         }
-      case 3:
+      case '2':
         {
-          break;
-        }
-      case 4:
-        {
-          Serial1.end();
+          serialCom.end();
           Serial.println("Calibration Starting");
           steering.startCalibration();  //starting calibration
-          Serial1.begin(9600);
-          //messageHandler.sendMessage(Serial2, 2, "");
-          //Serial.println("data send");
-          //delay(500);
-
+          messageHandler.sendMessage(Serial2 , 'a', " ");  
+          serialCom.begin(9600); 
           break;
         }
-      case 5:
+      case '4':
         {
-          Serial1.end();
+          //serialCom.end();
           tone(24, 200, 1000);
-          Serial1.begin(9600);
+          //serialCom.begin(9600);
+          break;
+        }
+      case '9':
+        {
+          Serial.println("\n");
+          Serial.println(data);
           break;
         }
     }

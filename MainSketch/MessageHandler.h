@@ -6,6 +6,7 @@ public:
 protected:
 	// buffer for the message
 	char messageBuf[MESSAGE_BUFF_SIZE];
+  char sendMessageBuf[MESSAGE_BUFF_SIZE];
 	// current position in the message buffer
 	int currentMessageBuf;
 	// indicates if we are in a message - is true between <start-mark> and <end-mark>
@@ -25,11 +26,18 @@ public:
 	// checks if the message is in the serial buffer and reads it.
 	void pollMessage(Stream &serial)
 	{
-		while ((serial.available() == true) && (messageAvaliable == false)) 
+		while (serial.available() == true) 
 		{
+      
 			// read a byte from the serial interface
-			char b = serial.read();
-			Serial.print(b);      
+			int b = serial.read();
+      Serial.print(b);
+      if (b < 0) {
+        
+        // end - serial can't read
+        break;
+      }
+
 			switch (b) {
 			case '<': { // start marker
 				inMessage = true;
@@ -42,13 +50,13 @@ public:
 			case '>': {// end marker
 				if (inMessage == true)
 				{
-					
           // terminate the string 
           messageBuf[currentMessageBuf] = '\0';
 
 					inMessage = false;
 
 					messageAvaliable = true;
+          return;          
 				}
 				break;}
 			default:
@@ -58,6 +66,7 @@ public:
 					currentMessageBuf++;
 				}
 			}
+
 		}
 	}
 
@@ -68,7 +77,7 @@ public:
 	}
 
 	// Gets the current available message.
-	const char* getMessage(byte* id)
+	const char* getMessage(char* id)
 	{
     if (messageAvaliable == false)
     {
@@ -81,16 +90,24 @@ public:
     // mark that the message is no longer available
     messageAvaliable = false;
 
-		return &(messageBuf[1]);
+    // return &(messageBuf[1]);
+		return messageBuf + 1;
 	}
 	
 	// Sends a message to the serial interface.
-	void sendMessage(Stream &serial, byte id, const char* data) 
-	{	  
+	void sendMessage(Stream& serial, char id, const char* data) 
+	{
+    Serial.print("send ....");    
+    sprintf(sendMessageBuf, "<%c%s>", id, data);
+    serial.write(sendMessageBuf, strlen(sendMessageBuf));
+    serial.flush();
+    Serial.println(" done");    
+    delay(10);
 	  // send it
-	  serial.write('<'); // send start-marker
+	  /*serial.write('<'); // send start-marker
     serial.write(id);
     serial.print(data);
 	  serial.write('>'); // send end-marker
+    */
 	}
 };
