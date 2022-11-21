@@ -99,7 +99,7 @@ public:
 	{
     sprintf(sendMessageBuf, "<%c%s>", id, data);
     serial.write(sendMessageBuf, strlen(sendMessageBuf));
-    Serial.println(sendMessageBuf);
+    //Serial.println(sendMessageBuf);
     serial.flush();
     delay(10);    
 	  // send it

@@ -65,7 +65,8 @@ void loop() {
           serialCom.end();
           Serial.println("Calibration Starting");
           steering.startCalibration();  //starting calibration
-          messageHandler.sendMessage(Serial2 , 'a', " ");  
+          messageHandler.sendMessage(Serial2 , 'a', " ");
+          //messageHandler.sendMessage(Serial2 , 'a', " ");    
           serialCom.begin(9600); 
           break;
         }
@@ -85,27 +86,4 @@ void loop() {
     }
     //Serial.println("Horz: " + String(joyHorz) + " Vert: " + String(joyVert) + " Speed: " + String(speedVal/4) + " Cal: " + String(0) + " Horn: " + String(0));
   }
-
-
-  //messageHandler.sendMessage(Serial2, 1, "");
-  //delay(500);
-  //Serial.println("data send");
-  //messageHandler.sendMessage(Serial1, 1, "");
-  //Serial.println("data send");
-  //delay(500);
-
-
-  //calibrates the steering of remote button pressed and wasn't calibrated as far
-
-  //x = up/down; y = left/right
-  //ggf. while Schleife
-  //  if (calibStateRem == true && steering.isCalibrated()) {
-  //    steering.detailCalib(joyPos.y);
-  //  }
-
-  //egine will be stopped if distance detector has got an distance smaler ore equal to 5cm
-  //distance.stopIf(5);
-
-  //steering process of car; with current position of joystick
-  //steering.handleSteering(joyPos.y);
 }
