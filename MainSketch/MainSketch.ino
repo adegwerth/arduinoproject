@@ -50,24 +50,24 @@ void loop() {
           sscanf(data, "%d;%d;%d", &joyHorz, &joyVert, &speedVal);
           Serial.println(joyHorz);
           //driving process of car; with current position of joystick and speed of engines
-          serialCom.end();
+          //serialCom.end();
           distance.stopIf(5);
           driving.handleDriving(joyVert, speedVal / 4, distance);
           if (steering.isCalibrated() == true) {
             steering.handleSteering(joyHorz);
           }
-          serialCom.begin(9600);
+          //serialCom.begin(9600);
        
           break;
         }
       case '2':
         {
-          serialCom.end();
+          //serialCom.end();
           Serial.println("Calibration Starting");
           steering.startCalibration();  //starting calibration
           messageHandler.sendMessage(Serial2 , 'a', " ");
           //messageHandler.sendMessage(Serial2 , 'a', " ");    
-          serialCom.begin(9600); 
+          //serialCom.begin(9600); 
           break;
         }
       case '4':

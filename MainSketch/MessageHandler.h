@@ -26,17 +26,12 @@ public:
 	// checks if the message is in the serial buffer and reads it.
 	void pollMessage(Stream &serial)
 	{
-		while (serial.available() == true) 
+		while (serial.available() > 0) 
 		{
       
 			// read a byte from the serial interface
 			int b = serial.read();
       Serial.print(b);
-      if (b < 0) {
-        
-        // end - serial can't read
-        break;
-      }
 
 			switch (b) {
 			case '<': { // start marker
